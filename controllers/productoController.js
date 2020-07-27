@@ -57,3 +57,61 @@ exports.crearProducto = async (req, res, next) => {
         next();
     }
 }
+
+exports.mostrarProductos = async (req, res, next) => {
+    try {
+        const productos = await Productos.find({});
+        res.json(productos);
+    } catch (error) {
+        console.log(error);
+        next();
+    }
+}
+// Mostrar Producto por ID
+exports.mostrarProducto = async (req, res, next) => {
+    const producto = await Productos.findById(req.params.idProducto);
+
+    if(!producto) {
+        res.json({mensaje: 'Producto no existente'});
+        return next();
+    }
+    //Mostrando el producto
+    res.json(producto);
+}
+
+//Actualizar Producto por ID
+exports.actualizarProducto = async (req, res, next) => {
+    try {
+        
+        // Construir un nuevo producto
+        let nuevoProducto = req.body;
+        
+        //Verificar si hay una imagen nueva
+        if(req.file){
+            nuevoProducto.imagen = req.file.filename;
+        }else{
+            let productoAnterior = await Productos.findById(req.params.idProducto);
+            nuevoProducto.imagen = productoAnterior.imagen;
+        }
+
+        let producto = await Productos.findOneAndUpdate({ _id: req.params.idProducto },
+            nuevoProducto, {
+            new: true
+        });
+        res.json(producto);
+    } catch (error) {
+        console.log(error);
+        next();
+    }
+}
+
+exports.eliminarProducto = async (req, res, next) => {
+    try {
+        await Productos.findOneAndDelete({_id: req.params.idProducto});
+        res.json({ mensaje: 'El producto se ha eliminado correctamente' });
+    } catch (error) {
+        console.log(error);
+        next();
+    }
+}
+
